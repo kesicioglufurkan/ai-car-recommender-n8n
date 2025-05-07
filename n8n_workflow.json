@@ -1,0 +1,404 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "AI Agent Kurulum Mesajı (Araç Tavsiyesi için)\n\n    Görev:\n    Kullanıcının ihtiyaçlarına göre araç tavsiyesi vermek.\n\n    Veri Kaynağı:\n    Tüm araç bilgileri, Pinecone üzerinde saklanan bir vektör veritabanından alınmalıdır. Veritabanı dışı bilgi kullanılmamalıdır.\n\n    Yanıt Biçimi:\n    – Yalnızca araç isimlerini öner.\n    – TL cinsinden fiyatlara göre değerlendir.\n    – Yanıtları Türkçe ver.\n    – Her seferinde en fazla 1 ila 3 araç öner.\n    – Bilgi eksikse, kısa ve kibarca kullanıcıdan iste.\n\n    Tarz:\n    – Profesyonel ama samimi.\n    – Gereksiz detay veya uzun açıklamalardan kaçın.\n    – Kullanıcı ne istiyorsa, sadece o doğrultuda yanıt ver."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1420,
+        -100
+      ],
+      "id": "99d3139b-dcc4-482b-88e3-d1e05b1d4ede",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-pro-exp-02-05",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        60
+      ],
+      "id": "43ff3bc0-3ce7-4268-a19d-726e6fb975ae",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KLySX8AkGQhoc9AG",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1480,
+        140
+      ],
+      "id": "abd02b89-6e5a-455b-ad48-0b44eee243ad",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -140
+      ],
+      "id": "96058522-dc94-4e6d-b833-d487c6153e42",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "https://drive.google.com/file/d/1X3g7yJR4Iie-YmPD2uTzOl3IaWLMfujZ/view?usp=sharing",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        520,
+        -40
+      ],
+      "id": "903f648d-f0bf-4108-a6f6-03120d3b3fa0",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "w9SueZRdgIgomgbj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "arabalarveri",
+          "mode": "list",
+          "cachedResultName": "arabalarveri"
+        },
+        "options": {
+          "pineconeNamespace": "ADS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        -100
+      ],
+      "id": "7eb38fef-8c70-46fd-8a97-84d0b445f80e",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "pfJQ28E52ahX3Dkg",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        860,
+        120
+      ],
+      "id": "a10e06be-ac90-49c0-b2c5-10357ac2dbc8",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "modelName": "models/embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        700,
+        100
+      ],
+      "id": "29385c2c-5664-4c65-a4a1-963fdf9be59f",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KLySX8AkGQhoc9AG",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        -140
+      ],
+      "id": "2b4999df-7857-492c-bd64-c849a70ac177",
+      "name": "When chat message received",
+      "webhookId": "fc4b5dd5-5fb2-4dab-a978-58479480bcc8"
+    },
+    {
+      "parameters": {
+        "name": "suggest_cars",
+        "description": "use this tool for making car suggests"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        120
+      ],
+      "id": "d6d7623a-bff3-48d8-98e0-2404cd75db6b",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-pro-exp-02-05",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        280
+      ],
+      "id": "0049f983-78dc-483a-b669-8dbe5173f921",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KLySX8AkGQhoc9AG",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "arabalarveri",
+          "mode": "list",
+          "cachedResultName": "arabalarveri"
+        },
+        "options": {
+          "pineconeNamespace": "ADS"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        320
+      ],
+      "id": "8b634955-7b18-42e6-ba5e-12bddf707031",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "pfJQ28E52ahX3Dkg",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        460
+      ],
+      "id": "4709d585-6d76-4cb1-a5f3-bf650c44292c",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KLySX8AkGQhoc9AG",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        880,
+        260
+      ],
+      "id": "3332d94f-da23-49d8-bc39-c31d60914712",
+      "name": "Recursive Character Text Splitter",
+      "notesInFlow": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6b307991-ab9c-489c-bcbc-a43044498043",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed0f09d3704f48e2b222f6cf08447ae8696c24ec8ddcaea75b0519188af823ba"
+  },
+  "id": "k3nfVslCmvVwzyjy",
+  "tags": []
+}
